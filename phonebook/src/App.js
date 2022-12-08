@@ -3,6 +3,7 @@ import axios from "axios";
 import Persons from "./components/Persons";
 import Filter from "./components/Filter";
 import PersonForm from "./components/PersonForm";
+import personService from "./services/person";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
@@ -11,25 +12,62 @@ const App = () => {
   const [searchValue, setSearchValue] = useState("");
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3001/persons")
-      .then((response) => setPersons(response.data));
+    personService.getAll().then((response) => setPersons(response.data));
   }, []);
 
   const addNewName = (event) => {
     event.preventDefault();
-    for (let person of persons) {
-      if (person.name === newName || person.number === newNumber) {
-        alert(`${newName} or ${newNumber} already exists`);
-        return;
-      }
+
+    //personService.getPersonByName(newName).then((response) => {
+    //   if (response.data.length > 0) {
+    //     const person = { ...response.data[0], number: newNumber };
+    //     personService.updatePerson(person).then((response) => {
+    //       setPersons(
+    //         persons.map((person) =>
+    //           person.id !== response.data.id ? person : { ...response.data }
+    //         )
+    //       );
+    //     });
+    //   } else {
+    //     const person = {
+    //       name: newName,
+    //       number: newNumber,
+    //     };
+    //     personService
+    //       .postPerson(person)
+    //       .then((response) => {
+    //         setPersons(persons.concat(response.data));
+    //       })
+    //       .catch((e) => alert(`can't add ${newName}`));
+    //   }
+    //   setNewName("");
+    //   setNewNumber("");
+    // });
+
+    //other implementation
+
+    const person = persons.find((person) => person.name === newName);
+    if (person) {
+      const updatedPerson = { ...person, number: newNumber };
+      personService.updatePerson(updatedPerson).then((response) => {
+        setPersons(
+          persons.map((person) =>
+            person.id !== response.data.id ? person : { ...response.data }
+          )
+        );
+      });
+    } else {
+      const newPerson = {
+        name: newName,
+        number: newNumber,
+      };
+      personService
+        .postPerson(newPerson)
+        .then((response) => {
+          setPersons(persons.concat(response.data));
+        })
+        .catch((e) => alert(`can't add ${newName}`));
     }
-    const name = {
-      name: newName,
-      number: newNumber,
-      id: persons.length + 1,
-    };
-    setPersons(persons.concat(name));
     setNewName("");
     setNewNumber("");
   };
@@ -46,6 +84,23 @@ const App = () => {
     setSearchValue(event.target.value);
   };
 
+  const handleDeletePerson = (id) => {
+    personService
+      .getPersonById(id)
+      .then((response) => {
+        if (
+          window.confirm(
+            `are you sure you want to delete ${response.data.name}`
+          )
+        ) {
+          personService
+            .deletePerson(id)
+            .then(() => setPersons(persons.filter((p) => p.id !== id)));
+        }
+      })
+      .catch((e) => alert("person doesn't exists"));
+  };
+
   return (
     <div>
       <h2>Phonebook</h2>
@@ -59,7 +114,11 @@ const App = () => {
         handleNumberChange={handleNumberChange}
       />
       <h2>Numbers</h2>
-      <Persons persons={persons} searchValue={searchValue} />
+      <Persons
+        persons={persons}
+        searchValue={searchValue}
+        handleDeletePerson={handleDeletePerson}
+      />
     </div>
   );
 };
