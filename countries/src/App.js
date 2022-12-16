@@ -9,15 +9,17 @@ function App() {
   const onSearchChange = (event) => {
     setSearch(event.target.value);
   };
-
+  
   useEffect(() => {
     if (search.length > 0) {
-      axios
-        .get(`https://restcountries.com/v3.1/name/${search}`)
-        .then((response) => {
-          setCountries(response.data);
-        })
-        .catch((err) => setCountries([]));
+      setTimeout(() => {
+        axios
+          .get(`https://restcountries.com/v3.1/name/${search}`)
+          .then((response) => {
+            setCountries(response.data);
+          })
+          .catch((err) => setCountries([]));
+      }, 2000);
     } else {
       setCountries([]);
     }
