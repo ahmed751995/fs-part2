@@ -18,35 +18,6 @@ const App = () => {
 
   const addNewName = (event) => {
     event.preventDefault();
-
-    //personService.getPersonByName(newName).then((response) => {
-    //   if (response.data.length > 0) {
-    //     const person = { ...response.data[0], number: newNumber };
-    //     personService.updatePerson(person).then((response) => {
-    //       setPersons(
-    //         persons.map((person) =>
-    //           person.id !== response.data.id ? person : { ...response.data }
-    //         )
-    //       );
-    //     });
-    //   } else {
-    //     const person = {
-    //       name: newName,
-    //       number: newNumber,
-    //     };
-    //     personService
-    //       .postPerson(person)
-    //       .then((response) => {
-    //         setPersons(persons.concat(response.data));
-    //       })
-    //       .catch((e) => alert(`can't add ${newName}`));
-    //   }
-    //   setNewName("");
-    //   setNewNumber("");
-    // });
-
-    //other implementation
-
     const person = persons.find((person) => person.name === newName);
     if (person) {
       const updatedPerson = { ...person, number: newNumber };
@@ -60,7 +31,7 @@ const App = () => {
           message: `person ${response.data.name} updated successfully`,
           type: "success",
         });
-      });
+      }).catch(e => setMessage({message: e.response.data.error}));
     } else {
       const newPerson = {
         name: newName,
@@ -75,7 +46,9 @@ const App = () => {
             type: "success",
           });
         })
-        .catch((e) => setMessage(`somthing wrong happened`));
+        .catch((e) => {
+          setMessage({message: e.response.data.error});
+        });
     }
     setNewName("");
     setNewNumber("");
